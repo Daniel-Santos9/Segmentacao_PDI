@@ -1,0 +1,59 @@
+#include <opencv2/opencv.hpp>
+#include <opencv2/highgui.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+#include <iostream>
+
+using namespace cv;
+using namespace std;
+
+int encontraPP(Mat src){
+    int preto=0;
+    for(int i =0; i<src.rows;i++){
+        for(int j=0; j<src.cols;j++){
+            if(src.at<uchar>(i,j) == 0)
+                preto++;
+        }
+    }
+    return preto;
+}
+Mat contraste(Mat src, float c){
+    Mat dst = src.clone();
+   // float f = (259 * (c + 255)) / (255*(259-c));
+    for(int i=0; i<src.rows;i++){
+        for(int j=0; j<src.cols;j++){
+            dst.at<uchar>(i,j) = uint(128*(double(src.at<uchar>(i,j))-128)+128);
+        }
+    }
+    return dst;
+}
+
+int main(){
+     Mat img,dst;
+     img = imread("codorna2.jpeg",0);
+     if(img.empty())
+       cout<<"imagem não encontrada";
+     medianBlur(img,dst,9);
+     //medianBlur(img,dst,3);
+     //medianBlur(img,dst,3);
+
+//        dst = contraste(dst,10);
+     threshold(dst,dst,90,255,THRESH_BINARY);
+     int ele_tam=1;
+     Mat elemento = getStructuringElement(MORPH_RECT, Size(ele_tam+2, ele_tam+3), Point(ele_tam, ele_tam));
+     //erode(dst, dst, elemento);
+     //dilate(dst, dst, elemento);
+     erode(dst, dst, elemento);
+     //dilate(dst, dst, elemento);
+     medianBlur(dst,dst,5);
+     int preto = encontraPP(dst);
+
+     //Sobel(dst, dst,CV_16S, 1, 0, 3, 1, 0, BORDER_DEFAULT);
+     namedWindow("segmentado");
+     imshow("Codorna", img);
+     imshow("segmentado",dst);
+     waitKey(0);
+     destroyWindow("Codorna");
+     destroyWindow("segmentado");
+
+    return 0;
+}
